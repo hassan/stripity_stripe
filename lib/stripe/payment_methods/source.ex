@@ -4,11 +4,11 @@ defmodule Stripe.Source do
 
   Stripe API reference: https://stripe.com/docs/api#sources
   """
-  use Stripe.Entity
 
-  @type source_type :: :ach_credit_transfer | :alipay | :bancontact |
-                       :bitcoin | :card | :giropay | :ideal | :p24 |
-                       :sofort | :three_d_secure
+  use Stripe.Entity
+  import Stripe.Request
+
+  @type source_type :: String.t
 
   @type ach_credit_transfer :: %{
     account_number: String.t | nil,
@@ -61,7 +61,7 @@ defmodule Stripe.Source do
 
   @type code_verification_flow :: %{
     attempts_remaining: integer,
-    status: :pending | :succeeded | :failed
+    status: String.t
   }
 
   @type giropay :: %{
@@ -101,9 +101,9 @@ defmodule Stripe.Source do
   }
 
   @type redirect_flow :: %{
-    failure_reason: :user_abort | :declined | :processing_error | nil,
+    failure_reason: String.t | nil,
     return_url: String.t,
-    status: :prending | :succeeded | :not_required | :failed,
+    status: String.t,
     url: String.t
   }
 
@@ -136,7 +136,7 @@ defmodule Stripe.Source do
     code_verification: code_verification_flow | nil,
     created: Stripe.timestamp,
     currency: String.t | nil,
-    flow: :redirect | :receiver | :code_verification | :none,
+    flow: String.t,
     giropay: giropay | nil,
     ideal: ideal | nil,
     livemode: boolean,
@@ -147,10 +147,10 @@ defmodule Stripe.Source do
     redirect: redirect_flow | nil,
     sofort: sofort | nil,
     statement_descriptor: String.t | nil,
-    status: :canceled | :chargeable | :consumed | :failed | :pending,
+    status: String.t,
     three_d_secure: three_d_secure | nil,
     type: source_type,
-    usage: :reusable | :single_use | nil,
+    usage: String.t | nil,
   }
 
   defstruct [
@@ -182,4 +182,73 @@ defmodule Stripe.Source do
     :type,
     :usage
   ]
+
+  @plural_endpoint "sources"
+
+  @doc """
+  Create a source.
+  """
+  @spec create(map, Keyword.t) :: {:ok, t} | {:error, Stripe.Error.t}
+  def create(%{} = params, opts \\ []) do
+    new_request(opts)
+    |> put_endpoint(@plural_endpoint)
+    |> put_params(params)
+    |> put_method(:post)
+    |> make_request()
+  end
+
+  @doc """
+  Retrieve a source.
+  """
+  @spec retrieve(Stripe.id | t, map, Stripe.options) :: {:ok, t} | {:error, Stripe.Error.t}
+  def retrieve(id, %{} = params, opts \\ []) do
+    new_request(opts)
+    |> put_endpoint(@plural_endpoint <> "/#{get_id!(id)}")
+    |> put_method(:get)
+    |> put_params(params)
+    |> make_request()
+  end
+
+  @doc """
+  Update a source.
+
+  Takes the `id` and a map of changes
+  """
+  @spec update(Stripe.id | t, map, Stripe.options) :: {:ok, t} | {:error, Stripe.Error.t}
+  def update(id, %{} = params, opts \\ []) do
+    new_request(opts)
+    |> put_endpoint(@plural_endpoint <> "/#{get_id!(id)}")
+    |> put_method(:post)
+    |> put_params(params)
+    |> make_request()
+  end
+
+  defp customer_endpoint(%{customer: id}) do
+    "customers/" <> id <> "/sources"
+  end
+
+  @doc """
+  Attach a source to a customer.
+  """
+  @spec attach(map, Keyword.t) :: {:ok, t} | {:error, Stripe.Error.t}
+  def attach(%{customer: _, source: _} = params, opts \\ []) do
+    endpoint = params |> customer_endpoint()
+    new_request(opts)
+    |> put_endpoint(endpoint)
+    |> put_params(params |> Map.delete(:customer))
+    |> put_method(:post)
+    |> make_request()
+  end
+
+  @doc """
+  Detach a source from a customer.
+  """
+  @spec detach(Stripe.id | t, map, Stripe.options) :: {:ok, t} | {:error, Stripe.Error.t}
+  def detach(id, %{customer: _} = params, opts \\ []) do
+    endpoint = params |> customer_endpoint()
+    new_request(opts)
+    |> put_endpoint(endpoint <> "/#{get_id!(id)}")
+    |> put_method(:delete)
+    |> make_request()
+  end
 end

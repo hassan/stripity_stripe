@@ -10,12 +10,28 @@ defmodule Stripe.Converter do
   def convert_result(result), do: convert_value(result)
 
   @supported_objects ~w(
+    account
+    balance
+    balance_transaction
+    bank_account
+    card
+    charge
+    country_spec
+    coupon
+    customer
+    event
+    external_account
+    file_upload
+    invoice
+    line_item
     list
-    account external_account oauth
-    balance balance_transaction charge customer event file_upload refund token
-    card source
-    coupon invoice line_item plan subscription
+    oauth
+    plan
+    refund
     sku
+    source
+    subscription
+    token
   )
 
   @no_convert_maps ~w(metadata supported_bank_account_currencies)

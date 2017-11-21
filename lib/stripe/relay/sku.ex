@@ -4,6 +4,7 @@ defmodule Stripe.Sku do
 
   Stripe API reference: https://stripe.com/docs/api#sku_object
   """
+
   use Stripe.Entity
   import Stripe.Request
 
