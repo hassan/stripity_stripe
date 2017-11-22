@@ -6,6 +6,7 @@ defmodule Stripe.Converter do
   If the result is not a supported Stripe object, it just returns a plain map
   with atomized keys.
   """
+
   @spec convert_result(%{String.t() => any}) :: struct
   def convert_result(result), do: convert_value(result)
 
@@ -104,10 +105,10 @@ defmodule Stripe.Converter do
         |> Enum.to_list()
 
       unless Enum.empty?(extra_keys) do
+        object_and_keys = "#{map["object"]}: #{inspect(extra_keys)}"
+
         Logger.error(
-          "Extra keys were received but ignored when converting Stripe object #{map["object"]}: #{
-            inspect(extra_keys)
-          }"
+          "Extra keys were received but ignored when converting Stripe object #{object_and_keys}"
         )
       end
 
