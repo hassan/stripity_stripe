@@ -27,6 +27,8 @@ defmodule Stripe.Converter do
     line_item
     list
     oauth
+    order_return
+    payout
     plan
     refund
     sku
@@ -105,11 +107,16 @@ defmodule Stripe.Converter do
         |> Enum.to_list()
 
       unless Enum.empty?(extra_keys) do
-        object_and_keys = "#{map["object"]}: #{inspect(extra_keys)}"
+        object = Map.get(map, "object")
 
-        Logger.error(
-          "Extra keys were received but ignored when converting Stripe object #{object_and_keys}"
-        )
+        module_name =
+          object
+          |> Stripe.Util.object_name_to_module()
+          |> Stripe.Util.module_to_string()
+
+        details = "#{module_name}: #{inspect(extra_keys)}"
+        message = "Extra keys were received but ignored when converting #{details}"
+        Logger.debug(message)
       end
 
       :ok

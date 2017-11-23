@@ -13,26 +13,48 @@ defmodule Stripe.Event do
   import Stripe.Request
 
   @type event_data :: %{
-    object: map,
-    previous_attributes: map
-  }
+          object: event_data_object,
+          previous_attributes: map
+        }
+
+  # TODO: add Scheduled query run
+  @type event_data_object ::
+          Stripe.Account.t()
+          | Stripe.ApplicationFee.t()
+          | Stripe.Charge.t()
+          | Stripe.Coupon.t()
+          | Stripe.Customer.t()
+          | Stripe.File.t()
+          | Stripe.Invoice.t()
+          | Stripe.Invoiceitem.t()
+          | Stripe.Order.t()
+          | Stripe.OrderReturn.t()
+          | Stripe.Payout.t()
+          | Stripe.Plan.t()
+          | Stripe.Product.t()
+          | Stripe.Recipient.t()
+          | Stripe.Review.t()
+          | Stripe.SKU.t()
+          | Stripe.Source.t()
+          | Stripe.Transfer.t()
+          | map
 
   @type event_request :: %{
-    id: String.t | nil,
-    idempotency_key: String.t | nil
-  }
+          id: String.t() | nil,
+          idempotency_key: String.t() | nil
+        }
 
   @type t :: %__MODULE__{
-    id: Stripe.id,
-    object: String.t,
-    api_version: String.t | nil,
-    created: Stripe.timestamp,
-    data: event_data,
-    livemode: boolean,
-    pending_webhooks: non_neg_integer,
-    request: event_request | nil,
-    type: String.t
-  }
+          id: Stripe.id(),
+          object: String.t(),
+          api_version: String.t() | nil,
+          created: Stripe.timestamp(),
+          data: event_data,
+          livemode: boolean,
+          pending_webhooks: non_neg_integer,
+          request: event_request | nil,
+          type: String.t()
+        }
 
   defstruct [
     :id,
@@ -52,7 +74,7 @@ defmodule Stripe.Event do
   @doc """
   Retrieve an event.
   """
-  @spec retrieve(Stripe.id | t, Stripe.options) :: {:ok, t} | {:error, Stripe.Error.t}
+  @spec retrieve(Stripe.id() | t, Stripe.options()) :: {:ok, t} | {:error, Stripe.Error.t()}
   def retrieve(id, opts \\ []) do
     new_request(opts)
     |> put_endpoint(@plural_endpoint <> "/#{get_id!(id)}")
@@ -63,7 +85,7 @@ defmodule Stripe.Event do
   @doc """
   List all events, going back up to 30 days.
   """
-  @spec list(map, Stripe.options) :: {:ok, Stripe.List.of(t)} | {:error, Stripe.Error.t}
+  @spec list(map, Stripe.options()) :: {:ok, Stripe.List.of(t)} | {:error, Stripe.Error.t()}
   def list(params \\ %{}, opts \\ []) do
     new_request(opts)
     |> put_endpoint(@plural_endpoint)
